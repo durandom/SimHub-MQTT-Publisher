@@ -15,6 +15,7 @@ namespace SimHub.MQTTPublisher.Payload
             Brake = data.NewData.Brake;
             Gear = data.NewData.Gear;
             CarCoordinates = data.NewData.CarCoordinates.ToList();
+            CurrentLap = data.NewData.CurrentLap;
             CurrentLapTime = data.NewData.CurrentLapTime.TotalMilliseconds;
             CarModel = data.NewData.CarModel;
             CarClass = data.NewData.CarClass;
@@ -27,6 +28,7 @@ namespace SimHub.MQTTPublisher.Payload
         public double Clutch { get; set; }
         public string Gear { get; set; }
         public List<double> CarCoordinates { get; set; }
+        public double CurrentLap { get; set; }
         public double CurrentLapTime { get; set; }
         public string CarModel { get; set; }
         public string CarClass { get; set; }

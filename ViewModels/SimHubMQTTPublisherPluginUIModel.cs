@@ -10,6 +10,8 @@ namespace SimHub.MQTTPublisher.ViewModels
 
         private string _server;
 
+        private int _port;
+
         private string _topic;
 
         private string _login;
@@ -24,6 +26,16 @@ namespace SimHub.MQTTPublisher.ViewModels
             set
             {
                 _server = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public int Port
+        {
+            get => _port;
+            set
+            {
+                _port = value;
                 OnPropertyChanged();
             }
         }

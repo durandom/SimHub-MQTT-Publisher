@@ -16,6 +16,7 @@ namespace SimHub.MQTTPublisher.Settings
             this.Model = new SimHubMQTTPublisherPluginUIModel()
             {
                 Server = simHubMQTTPublisherPlugin.Settings.Server,
+                Port = simHubMQTTPublisherPlugin.Settings.Port,
                 Topic = simHubMQTTPublisherPlugin.Settings.Topic,
                 Login = simHubMQTTPublisherPlugin.Settings.Login,
                 Password = simHubMQTTPublisherPlugin.Settings.Password,
@@ -31,6 +32,7 @@ namespace SimHub.MQTTPublisher.Settings
 
         private void Apply_Settings(object sender, System.Windows.RoutedEventArgs e)
         {
+            SimHubMQTTPublisherPlugin.Settings.Port = Model.Port;
             SimHubMQTTPublisherPlugin.Settings.Server = Model.Server;
             SimHubMQTTPublisherPlugin.Settings.Topic = Model.Topic;
             SimHubMQTTPublisherPlugin.Settings.Login = Model.Login;

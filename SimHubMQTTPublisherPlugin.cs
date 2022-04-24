@@ -5,6 +5,9 @@ using MQTTnet.Client.Options;
 using Newtonsoft.Json;
 using SimHub.MQTTPublisher.Settings;
 using SimHub.Plugins;
+using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -105,10 +108,25 @@ namespace SimHub.MQTTPublisher
         internal void CreateMQTTClient()
         {
             var newmqttClient = mqttFactory.CreateMqttClient();
+            // var caCert = X509Certificate.CreateFromCertFile(@"C:\mosquitto_ca.crt");
+            // var clientCert = new X509Certificate2(@"client-certificate.pfx", "ExportPasswordUsedWhenCreatingPfxFile");
+            // X509Certificate2 caCrt = new X509Certificate2(File.ReadAllBytes(@"C:\mosquitto_ca.crt"));
 
             var mqttClientOptions = new MqttClientOptionsBuilder()
-               .WithTcpServer(Settings.Server)
+               .WithTcpServer(Settings.Server, Settings.Port)
                .WithCredentials(Settings.Login, Settings.Password)
+               //.WithTls()             
+               //.WithTls()             
+               //.WithTls(new MqttClientOptionsBuilderTlsParameters()
+               //{
+               //    UseTls = true,
+               //    SslProtocol = System.Security.Authentication.SslProtocols.Tls12,
+               //    Certificates = new List<X509Certificate>()
+               //         {
+               //             // clientCert, caCert
+               //             caCert
+               //         }
+               //})
                .Build();
 
             newmqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
