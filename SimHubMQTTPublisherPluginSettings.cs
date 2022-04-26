@@ -7,7 +7,7 @@ namespace SimHub.MQTTPublisher
     /// </summary>
     public class SimHubMQTTPublisherPluginSettings
     {
-        public string Server { get; set; } = "localhost";
+        public string Server { get; set; } = "telemetry.b4mad.racing";
 
         public string Topic { get; set; } = "racing/driver_name";
 
@@ -15,7 +15,7 @@ namespace SimHub.MQTTPublisher
 
         public string Password { get; set; } = "admin";
 
-        public int Port { get; set; } = 1883;
+        public int Port { get; set; } = 31883;
     }
 
     public class SimHubMQTTPublisherPluginUserSettings
