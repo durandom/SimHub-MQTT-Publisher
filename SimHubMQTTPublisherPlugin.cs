@@ -56,7 +56,7 @@ namespace SimHub.MQTTPublisher
             {
                 var applicationMessage = new MqttApplicationMessageBuilder()
                .WithTopic(Settings.Topic)
-               .WithPayload(JsonConvert.SerializeObject(new Payload.PayloadRoot(data, UserSettings)))
+               .WithPayload(JsonConvert.SerializeObject(new Payload.PayloadRoot(data, UserSettings, pluginManager)))
                .Build();
 
                 Task.Run(async () => await mqttClient.PublishAsync(applicationMessage, CancellationToken.None)).Wait();

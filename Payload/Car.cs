@@ -1,12 +1,13 @@
 ﻿using GameReaderCommon;
 using System.Collections.Generic;
+using SimHub.Plugins;
 using System.Linq;
 
 namespace SimHub.MQTTPublisher.Payload
 {
     public class Car
     {
-        public Car(GameData data)
+        public Car(GameData data, PluginManager pluginManager)
         {
             SpeedKmh = data.NewData.SpeedKmh;
             Rpms = data.NewData.Rpms;
@@ -19,6 +20,8 @@ namespace SimHub.MQTTPublisher.Payload
             CurrentLapTime = data.NewData.CurrentLapTime.TotalMilliseconds;
             CarModel = data.NewData.CarModel;
             CarClass = data.NewData.CarClass;
+            SteeringAngle = pluginManager.GetPropertyValue("ExtraInputProperties.SteeringAngle");
+            HandBrake = data.NewData.Handbrake;
         }
 
         public double SpeedKmh { get; set; }
@@ -32,5 +35,7 @@ namespace SimHub.MQTTPublisher.Payload
         public double CurrentLapTime { get; set; }
         public string CarModel { get; set; }
         public string CarClass { get; set; }
+        public object SteeringAngle { get; set; }
+        public double HandBrake { get; set; }
     }
 }
