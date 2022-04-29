@@ -9,8 +9,8 @@ namespace SimHub.MQTTPublisher.Payload
             //this.TrackId = data.NewData.TrackId;
             //this.TrackConfig = data.NewData.TrackConfig;
             this.TrackPositionPercent = data.NewData.TrackPositionPercent;
-            this.TrackCode = data.NewData.TrackCode;
-            this.TrackLength = data.NewData.TrackLength;
+            //this.TrackCode = data.NewData.TrackCode;
+            //this.TrackLength = data.NewData.TrackLength;
         }
 
         public double TrackPositionPercent { get; set; }
@@ -19,8 +19,8 @@ namespace SimHub.MQTTPublisher.Payload
 
         //public string TrackConfig { get; set; }
 
-        public string TrackCode { get; set; }
+        //public string TrackCode { get; set; }
 
-        public double TrackLength { get; set; }
+        //public double TrackLength { get; set; }
     }
 }

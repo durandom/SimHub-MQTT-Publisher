@@ -54,8 +54,15 @@ namespace SimHub.MQTTPublisher
         {
             if (data.GameRunning)
             {
+                // FIXME: build topic at session start?
+                var topic = Settings.Topic + 
+                    "/" + data.SessionId +
+                    "/" + data.GameName + 
+                    "/" + data.NewData.TrackCode + 
+                    "/" + data.NewData.CarModel;
+
                 var applicationMessage = new MqttApplicationMessageBuilder()
-               .WithTopic(Settings.Topic)
+               .WithTopic(topic)
                .WithPayload(JsonConvert.SerializeObject(new Payload.PayloadRoot(data, UserSettings, pluginManager)))
                .Build();
 
