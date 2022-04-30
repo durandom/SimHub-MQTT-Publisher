@@ -22,6 +22,8 @@ namespace SimHub.MQTTPublisher.Payload
             //CarClass = data.NewData.CarClass;
             SteeringAngle = pluginManager.GetPropertyValue("ExtraInputProperties.SteeringAngle");
             HandBrake = data.NewData.Handbrake;
+            TrackPositionPercent = data.NewData.TrackPositionPercent;
+
         }
 
         public double SpeedKmh { get; set; }
@@ -37,5 +39,6 @@ namespace SimHub.MQTTPublisher.Payload
         //public string CarClass { get; set; }
         public object SteeringAngle { get; set; }
         public double HandBrake { get; set; }
+        public double TrackPositionPercent { get; set; }
     }
 }

@@ -58,8 +58,8 @@ namespace SimHub.MQTTPublisher
                 var topic = Settings.Topic + 
                     "/" + data.SessionId +
                     "/" + data.GameName + 
-                    "/" + data.NewData.TrackCode + 
-                    "/" + data.NewData.CarModel;
+                    "/" + data.NewData.TrackCode.Replace("/", string.Empty) + 
+                    "/" + data.NewData.CarModel.Replace("/", string.Empty);
 
                 var applicationMessage = new MqttApplicationMessageBuilder()
                .WithTopic(topic)

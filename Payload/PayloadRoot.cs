@@ -11,12 +11,12 @@ namespace SimHub.MQTTPublisher.Payload
             time = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             userId = userSettings.UserId.ToString();
             carState = new Car(data, pluginManager);
-            track = new TrackInformation(data);
+            //track = new TrackInformation(data);
         }
 
         public long time { get; set; }
         public string userId { get; set; }
         public Car carState { get; set; }
-        public TrackInformation track { get;  set; }
+        //public TrackInformation track { get;  set; }
     }
 }
