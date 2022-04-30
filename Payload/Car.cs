@@ -18,7 +18,7 @@ namespace SimHub.MQTTPublisher.Payload
             CarCoordinates = data.NewData.CarCoordinates.ToList();
             CurrentLap = data.NewData.CurrentLap;
             CurrentLapTime = data.NewData.CurrentLapTime.TotalMilliseconds;
-            CarModel = data.NewData.CarModel;
+            //CarModel = data.NewData.CarModel;
             //CarClass = data.NewData.CarClass;
             SteeringAngle = pluginManager.GetPropertyValue("ExtraInputProperties.SteeringAngle");
             HandBrake = data.NewData.Handbrake;
@@ -35,7 +35,7 @@ namespace SimHub.MQTTPublisher.Payload
         public List<double> CarCoordinates { get; set; }
         public double CurrentLap { get; set; }
         public double CurrentLapTime { get; set; }
-        public string CarModel { get; set; }
+        //public string CarModel { get; set; }
         //public string CarClass { get; set; }
         public object SteeringAngle { get; set; }
         public double HandBrake { get; set; }
