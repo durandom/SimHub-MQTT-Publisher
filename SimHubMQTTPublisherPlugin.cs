@@ -25,7 +25,7 @@ namespace SimHub.MQTTPublisher
 
         private MqttFactory mqttFactory;
         private IMqttClient mqttClient;
-        private Dictionary<string, object> previousValues = new Dictionary<string, object>();
+        private Dictionary<string, string> previousValues = new Dictionary<string, string>();
 
         private Dictionary<string, string> dataPoints = new Dictionary<string, string>()
         {
@@ -36,8 +36,8 @@ namespace SimHub.MQTTPublisher
             {"Brake", "DataCorePlugin.GameData.Brake"},
             {"Gear", "DataCorePlugin.GameData.Gear"},
             {"CurrentLap", "DataCorePlugin.GameData.CurrentLap"},
-            {"CurrentLapTime", "DataCorePlugin.GameData.CurrentLapTime"},
             {"CarCoordinates", "DataCorePlugin.GameData.CarCoordinates"},
+            {"CurrentLapTime", "DataCorePlugin.GameData.CurrentLapTime"},
             {"SteeringAngle", "ExtraInputProperties.SteeringAngle"},
             {"HandBrake", "DataCorePlugin.GameData.Handbrake"},
             {"TrackPositionPercent", "DataCorePlugin.GameData.TrackPositionPercent"},
@@ -45,7 +45,6 @@ namespace SimHub.MQTTPublisher
             {"CarCoordinates02", "DataCorePlugin.GameData.CarCoordinates02" },
             {"CarCoordinates03", "DataCorePlugin.GameData.CarCoordinates03" },
         };
-
 
         /// <summary>
         /// Instance of the current plugin manager
@@ -76,21 +75,34 @@ namespace SimHub.MQTTPublisher
             if (data.GameRunning)
             {
                 var payload = new Dictionary<string, object>();
-                payload["time"] = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                var telemetry = new Dictionary<string, object>();
+                object value;
+                string stringValue;
+                
+                payload["time"] = System.DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
-                foreach (var d in this.dataPoints)
+                foreach (var d in dataPoints)
                 {
-                    var value = pluginManager.GetPropertyValue(d.Value);
-                    if (value != this.previousValues[d.Key])
+                    if ($"{d.Key}" == "CurrentLapTime")
                     {
-                        payload[d.Key] = value;
-                        this.previousValues[d.Key] = value;
+                        value = data.NewData.CurrentLapTime.TotalMilliseconds;
+                    }
+                    else
+                    {
+                        value = pluginManager.GetPropertyValue(d.Value);
+                    }
+                    stringValue = $"{value}";
+                    if (stringValue != previousValues[d.Key])
+                    {
+                        telemetry[d.Key] = value;
+                        previousValues[d.Key] = stringValue;
                     }
                 }
+                payload["telemetry"] = telemetry;
 
                 // FIXME: build topic at session start?
                 var topic = Settings.Topic +
-                    "/" + UserSettings.UserId.ToString();
+                    "/" + UserSettings.UserId.ToString() +
                     "/" + data.SessionId +
                     "/" + data.GameName +
                     "/" + data.NewData.TrackCode.Replace("/", string.Empty) +
@@ -138,9 +150,9 @@ namespace SimHub.MQTTPublisher
         {
             SimHub.Logging.Current.Info("Starting plugin");
             //SimHub.Logging.Current.Info(string.Join("    \n", pluginManager.GetAllPropertiesNames()));
-            foreach (var d in this.dataPoints)
+            foreach (var d in dataPoints)
             {
-                this.previousValues[d.Key] = null;
+                previousValues[d.Key] = "";
             }
 
             // Load settings
