@@ -25,6 +25,14 @@ namespace SimHub.MQTTPublisher
 
         private MqttFactory mqttFactory;
         private IMqttClient mqttClient;
+        private Dictionary<string, object> previousValues = new Dictionary<string, object>();
+
+        private Dictionary<string, string> dataPoints = new Dictionary<string, string>()
+        {
+            {"Rpms", "DataCorePlugin.GameData.Rpms" },
+            {"CarCoordinates01", "DataCorePlugin.GameData.CarCoordinates01" },
+        };
+
 
         /// <summary>
         /// Instance of the current plugin manager
@@ -53,7 +61,19 @@ namespace SimHub.MQTTPublisher
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
             if (data.GameRunning)
-            {
+            {                      
+                var payload = new Dictionary<string, object>();
+
+                foreach (var d in this.dataPoints)
+                {
+                    var value = pluginManager.GetPropertyValue(d.Value);
+                    if (value != this.previousValues[d.Key])
+                    {
+                        payload[d.Key] = value;
+                        this.previousValues[d.Key] = value;
+                    }                   
+                }
+
                 // FIXME: build topic at session start?
                 var topic = Settings.Topic + 
                     "/" + data.SessionId +
@@ -63,7 +83,8 @@ namespace SimHub.MQTTPublisher
 
                 var applicationMessage = new MqttApplicationMessageBuilder()
                .WithTopic(topic)
-               .WithPayload(JsonConvert.SerializeObject(new Payload.PayloadRoot(data, UserSettings, pluginManager)))
+               //.WithPayload(JsonConvert.SerializeObject(new Payload.PayloadRoot(data, UserSettings, pluginManager)))
+               .WithPayload(JsonConvert.SerializeObject(payload))
                .Build();
 
                 Task.Run(async () => await mqttClient.PublishAsync(applicationMessage, CancellationToken.None)).Wait();
@@ -101,6 +122,11 @@ namespace SimHub.MQTTPublisher
         public void Init(PluginManager pluginManager)
         {
             SimHub.Logging.Current.Info("Starting plugin");
+            //SimHub.Logging.Current.Info(string.Join("    \n", pluginManager.GetAllPropertiesNames()));
+            foreach (var d in this.dataPoints)
+            {
+                this.previousValues[d.Key] = null;
+            }
 
             // Load settings
             Settings = this.ReadCommonSettings<SimHubMQTTPublisherPluginSettings>("GeneralSettings", () => new SimHubMQTTPublisherPluginSettings());
