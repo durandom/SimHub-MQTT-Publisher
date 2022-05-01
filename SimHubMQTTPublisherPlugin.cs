@@ -30,7 +30,20 @@ namespace SimHub.MQTTPublisher
         private Dictionary<string, string> dataPoints = new Dictionary<string, string>()
         {
             {"Rpms", "DataCorePlugin.GameData.Rpms" },
+            {"SpeedKmh", "DataCorePlugin.GameData.SpeedKmh"},
+            {"Clutch", "DataCorePlugin.GameData.Clutch"},
+            {"Throttle", "DataCorePlugin.GameData.Throttle"},
+            {"Brake", "DataCorePlugin.GameData.Brake"},
+            {"Gear", "DataCorePlugin.GameData.Gear"},
+            {"CurrentLap", "DataCorePlugin.GameData.CurrentLap"},
+            {"CurrentLapTime", "DataCorePlugin.GameData.CurrentLapTime"},
+            {"CarCoordinates", "DataCorePlugin.GameData.CarCoordinates"},
+            {"SteeringAngle", "ExtraInputProperties.SteeringAngle"},
+            {"HandBrake", "DataCorePlugin.GameData.Handbrake"},
+            {"TrackPositionPercent", "DataCorePlugin.GameData.TrackPositionPercent"},
             {"CarCoordinates01", "DataCorePlugin.GameData.CarCoordinates01" },
+            {"CarCoordinates02", "DataCorePlugin.GameData.CarCoordinates02" },
+            {"CarCoordinates03", "DataCorePlugin.GameData.CarCoordinates03" },
         };
 
 
@@ -61,8 +74,9 @@ namespace SimHub.MQTTPublisher
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
             if (data.GameRunning)
-            {                      
+            {
                 var payload = new Dictionary<string, object>();
+                payload["time"] = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
                 foreach (var d in this.dataPoints)
                 {
@@ -71,14 +85,15 @@ namespace SimHub.MQTTPublisher
                     {
                         payload[d.Key] = value;
                         this.previousValues[d.Key] = value;
-                    }                   
+                    }
                 }
 
                 // FIXME: build topic at session start?
-                var topic = Settings.Topic + 
+                var topic = Settings.Topic +
+                    "/" + UserSettings.UserId.ToString();
                     "/" + data.SessionId +
-                    "/" + data.GameName + 
-                    "/" + data.NewData.TrackCode.Replace("/", string.Empty) + 
+                    "/" + data.GameName +
+                    "/" + data.NewData.TrackCode.Replace("/", string.Empty) +
                     "/" + data.NewData.CarModel.Replace("/", string.Empty);
 
                 var applicationMessage = new MqttApplicationMessageBuilder()
@@ -148,8 +163,8 @@ namespace SimHub.MQTTPublisher
             var mqttClientOptions = new MqttClientOptionsBuilder()
                .WithTcpServer(Settings.Server, Settings.Port)
                .WithCredentials(Settings.Login, Settings.Password)
-               //.WithTls()             
-               //.WithTls()             
+               //.WithTls()
+               //.WithTls()
                //.WithTls(new MqttClientOptionsBuilderTlsParameters()
                //{
                //    UseTls = true,
