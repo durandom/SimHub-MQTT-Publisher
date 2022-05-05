@@ -61,6 +61,8 @@ namespace SimHub.MQTTPublisher
         /// </summary>
         public string LeftMenuTitle => "MQTT Publisher";
 
+        private int counter;
+
         /// <summary>
         /// Called one time per game data update, contains all normalized game data,
         /// raw data are intentionnally "hidden" under a generic object type (A plugin SHOULD NOT USE IT)
@@ -72,7 +74,37 @@ namespace SimHub.MQTTPublisher
         /// <param name="data">Current game data, including current and previous data frame.</param>
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
-            if (data.GameRunning)
+            //Reduced update rate
+            if (counter > 0) {
+                counter--;
+                return;
+            }
+
+            //Avoid issues with disconnected client
+            if (!mqttClient.IsConnected)
+            {
+                var recon = mqttClient.ReconnectAsync();
+
+                try
+                {
+                    recon.Wait();
+                }
+                catch
+                {
+                    // Maybe log the error for user
+                }
+
+
+                if (!mqttClient.IsConnected) //No connection possible
+                {
+                    counter = 60 * 60; //Long timeout of about 1min before retry 
+                    return;
+                }
+            }
+
+            counter = Settings.UpdateRateLimit;
+
+            if (data.NewData != null && data.GameRunning)
             {
                 var payload = new Dictionary<string, object>();
                 var telemetry = new Dictionary<string, object>();
@@ -101,12 +133,20 @@ namespace SimHub.MQTTPublisher
                 payload["telemetry"] = telemetry;
 
                 // FIXME: build topic at session start?
+                string track = "Unknown";
+                if (data.NewData.TrackCode != null)
+                    track = data.NewData.TrackCode.Replace("/", string.Empty);
+
+                string carModel = "Unknown";
+                if (data.NewData.CarModel != null)
+                    carModel = data.NewData.CarModel.Replace("/", string.Empty);
+
                 var topic = Settings.Topic +
                     "/" + UserSettings.UserId.ToString() +
                     "/" + data.SessionId +
                     "/" + data.GameName +
-                    "/" + data.NewData.TrackCode.Replace("/", string.Empty) +
-                    "/" + data.NewData.CarModel.Replace("/", string.Empty);
+                    "/" + track +
+                    "/" + carModel; 
 
                 var applicationMessage = new MqttApplicationMessageBuilder()
                .WithTopic(topic)
