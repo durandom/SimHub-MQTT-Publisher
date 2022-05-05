@@ -5,6 +5,7 @@ using MQTTnet.Client.Options;
 using Newtonsoft.Json;
 using SimHub.MQTTPublisher.Settings;
 using SimHub.Plugins;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
@@ -61,7 +62,7 @@ namespace SimHub.MQTTPublisher
         /// </summary>
         public string LeftMenuTitle => "MQTT Publisher";
 
-        private int counter;
+        private int UpdateSkipCounter;
 
         /// <summary>
         /// Called one time per game data update, contains all normalized game data,
@@ -75,34 +76,28 @@ namespace SimHub.MQTTPublisher
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
             //Reduced update rate
-            if (counter > 0) {
-                counter--;
+            if (UpdateSkipCounter > 0) {
+                UpdateSkipCounter--;
                 return;
             }
+
+            PluginManager.SetPropertyValue("Connected", this.GetType(), mqttClient.IsConnected);
+
+            //Exits if the plugin is disabled
+            if (!Settings.Enabled)
+                return;
 
             //Avoid issues with disconnected client
             if (!mqttClient.IsConnected)
             {
-                var recon = mqttClient.ReconnectAsync();
+                UpdateSkipCounter = 3600; //Timeout of 1min at 60fps
 
-                try
-                {
-                    recon.Wait();
-                }
-                catch
-                {
-                    // Maybe log the error for user
-                }
-
-
-                if (!mqttClient.IsConnected) //No connection possible
-                {
-                    counter = 60 * 60; //Long timeout of about 1min before retry 
-                    return;
-                }
+                //Client reconnect is done in a seperate thread to not lock up the update thread when server is offline
+                Task.Run(ReconnectClient); 
+                return;
             }
 
-            counter = Settings.UpdateRateLimit;
+            UpdateSkipCounter = Settings.UpdateRateLimit;
 
             if (data.NewData != null && data.GameRunning)
             {
@@ -141,20 +136,19 @@ namespace SimHub.MQTTPublisher
                 if (data.NewData.CarModel != null)
                     carModel = data.NewData.CarModel.Replace("/", string.Empty);
 
-                var topic = Settings.Topic +
+                string topic = Settings.Topic +
                     "/" + UserSettings.UserId.ToString() +
                     "/" + data.SessionId +
                     "/" + data.GameName +
                     "/" + track +
-                    "/" + carModel; 
+                    "/" + carModel;
 
                 var applicationMessage = new MqttApplicationMessageBuilder()
                .WithTopic(topic)
-               //.WithPayload(JsonConvert.SerializeObject(new Payload.PayloadRoot(data, UserSettings, pluginManager)))
                .WithPayload(JsonConvert.SerializeObject(payload))
                .Build();
 
-                Task.Run(async () => await mqttClient.PublishAsync(applicationMessage, CancellationToken.None)).Wait();
+                var task = mqttClient.PublishAsync(applicationMessage, CancellationToken.None);
             }
         }
 
@@ -188,7 +182,7 @@ namespace SimHub.MQTTPublisher
         /// <param name="pluginManager"></param>
         public void Init(PluginManager pluginManager)
         {
-            SimHub.Logging.Current.Info("Starting plugin");
+            Log("Starting plugin");
             //SimHub.Logging.Current.Info(string.Join("    \n", pluginManager.GetAllPropertiesNames()));
             foreach (var d in dataPoints)
             {
@@ -203,6 +197,10 @@ namespace SimHub.MQTTPublisher
             this.mqttFactory = new MqttFactory();
 
             CreateMQTTClient();
+
+            //Properties
+            pluginManager.AddProperty("Connected", this.GetType(), true.GetType(), null);
+            
         }
 
         internal void CreateMQTTClient()
@@ -239,6 +237,36 @@ namespace SimHub.MQTTPublisher
             {
                 oldMqttClient.Dispose();
             }
+        }
+
+        internal void Log(string text)
+        {
+            SimHub.Logging.Current.Info(LeftMenuTitle + ": " + text);
+        }
+
+        internal void LogError(string text)
+        {
+            SimHub.Logging.Current.Error(LeftMenuTitle + ": " + text);
+        }
+
+        private void ReconnectClient()
+        {
+            var recon = mqttClient.ReconnectAsync();
+
+            try
+            {
+                recon.Wait();
+            }
+            catch (Exception ex)
+            {
+                LogError("Failed to connect to the server: " + ex.Message);
+            }
+
+
+            if (!mqttClient.IsConnected) //No connection possible
+                UpdateSkipCounter = 60 * 60; //Long timeout of about 1min before retry
+            else
+                UpdateSkipCounter = 0; //So the next update can send data
         }
     }
 }
