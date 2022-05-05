@@ -78,7 +78,7 @@ namespace SimHub.MQTTPublisher
                 var telemetry = new Dictionary<string, object>();
                 object value;
                 string stringValue;
-                
+
                 payload["time"] = System.DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
                 foreach (var d in dataPoints)
@@ -98,23 +98,29 @@ namespace SimHub.MQTTPublisher
                         previousValues[d.Key] = stringValue;
                     }
                 }
-                payload["telemetry"] = telemetry;
 
-                // FIXME: build topic at session start?
-                var topic = Settings.Topic +
-                    "/" + UserSettings.UserId.ToString() +
-                    "/" + data.SessionId +
-                    "/" + data.GameName +
-                    "/" + data.NewData.TrackCode.Replace("/", string.Empty) +
-                    "/" + data.NewData.CarModel.Replace("/", string.Empty);
+                if (telemetry.Count > 0)
+                {
+                    payload["telemetry"] = telemetry;
 
-                var applicationMessage = new MqttApplicationMessageBuilder()
-               .WithTopic(topic)
-               //.WithPayload(JsonConvert.SerializeObject(new Payload.PayloadRoot(data, UserSettings, pluginManager)))
-               .WithPayload(JsonConvert.SerializeObject(payload))
-               .Build();
+                    // FIXME: build topic at session start?
+                    var topic = Settings.Topic +
+                        "/" + UserSettings.UserId.ToString() +
+                        "/" + data.SessionId +
+                        "/" + data.GameName +
+                        "/" + data.NewData.TrackCode.Replace("/", string.Empty) +
+                        "/" + data.NewData.CarModel.Replace("/", string.Empty) +
+                        "/" + data.NewData.SessionTypeName.Replace("/", string.Empty);
 
-                Task.Run(async () => await mqttClient.PublishAsync(applicationMessage, CancellationToken.None)).Wait();
+                    var applicationMessage = new MqttApplicationMessageBuilder()
+                    .WithTopic(topic)
+                    //.WithPayload(JsonConvert.SerializeObject(new Payload.PayloadRoot(data, UserSettings, pluginManager)))
+                    .WithPayload(JsonConvert.SerializeObject(payload))
+                    .Build();
+
+                    Task.Run(async () => await mqttClient.PublishAsync(applicationMessage, CancellationToken.None)).Wait();
+
+                }
             }
         }
 
