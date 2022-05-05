@@ -105,7 +105,7 @@ namespace SimHub.MQTTPublisher
                 var telemetry = new Dictionary<string, object>();
                 object value;
                 string stringValue;
-                
+
                 payload["time"] = System.DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
                 foreach (var d in dataPoints)
@@ -125,30 +125,39 @@ namespace SimHub.MQTTPublisher
                         previousValues[d.Key] = stringValue;
                     }
                 }
-                payload["telemetry"] = telemetry;
 
-                // FIXME: build topic at session start?
-                string track = "Unknown";
-                if (data.NewData.TrackCode != null)
-                    track = data.NewData.TrackCode.Replace("/", string.Empty);
+                if (telemetry.Count > 0)
+                {
+                    payload["telemetry"] = telemetry;
 
-                string carModel = "Unknown";
-                if (data.NewData.CarModel != null)
-                    carModel = data.NewData.CarModel.Replace("/", string.Empty);
+                    // FIXME: build topic at session start?
+                    string track = "Unknown";
+                    if (data.NewData.TrackCode != null)
+                        track = data.NewData.TrackCode.Replace("/", string.Empty);
 
-                string topic = Settings.Topic +
-                    "/" + UserSettings.UserId.ToString() +
-                    "/" + data.SessionId +
-                    "/" + data.GameName +
-                    "/" + track +
-                    "/" + carModel;
+                    string carModel = "Unknown";
+                    if (data.NewData.CarModel != null)
+                        carModel = data.NewData.CarModel.Replace("/", string.Empty);
 
-                var applicationMessage = new MqttApplicationMessageBuilder()
-               .WithTopic(topic)
-               .WithPayload(JsonConvert.SerializeObject(payload))
-               .Build();
+                    string sessionType = "Unknown";
+                    if (data.NewData.SessionTypeName != null)
+                        sessionType = data.NewData.SessionTypeName.Replace("/", string.Empty);
 
-                var task = mqttClient.PublishAsync(applicationMessage, CancellationToken.None);
+                    string topic = Settings.Topic +
+                        "/" + UserSettings.UserId.ToString() +
+                        "/" + data.SessionId +
+                        "/" + data.GameName +
+                        "/" + track +
+                        "/" + carModel +
+                        "/" + sessionType;
+
+                    var applicationMessage = new MqttApplicationMessageBuilder()
+                   .WithTopic(topic)
+                   .WithPayload(JsonConvert.SerializeObject(payload))
+                   .Build();
+
+                    var task = mqttClient.PublishAsync(applicationMessage, CancellationToken.None);
+                }
             }
         }
 
