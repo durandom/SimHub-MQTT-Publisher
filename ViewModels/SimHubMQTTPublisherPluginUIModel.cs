@@ -20,6 +20,10 @@ namespace SimHub.MQTTPublisher.ViewModels
 
         private Guid _UserId;
 
+        private bool _enabled;
+
+        private int _updateRateLimit;
+
         public string Server
         {
             get => _server;
@@ -76,6 +80,29 @@ namespace SimHub.MQTTPublisher.ViewModels
             set
             {
                 _UserId = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool Enabled
+        {
+            get => _enabled;
+            set
+            {
+                _enabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public int UpdateRateLimit
+        {
+            get => _updateRateLimit;
+            set
+            {
+                _updateRateLimit = value;
+                if (_updateRateLimit < 1)
+                    _updateRateLimit = 1;
+
                 OnPropertyChanged();
             }
         }

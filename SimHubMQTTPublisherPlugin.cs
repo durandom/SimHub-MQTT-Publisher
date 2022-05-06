@@ -5,6 +5,7 @@ using MQTTnet.Client.Options;
 using Newtonsoft.Json;
 using SimHub.MQTTPublisher.Settings;
 using SimHub.Plugins;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
@@ -61,6 +62,8 @@ namespace SimHub.MQTTPublisher
         /// </summary>
         public string LeftMenuTitle => "MQTT Publisher";
 
+        private int UpdateSkipCounter;
+
         /// <summary>
         /// Called one time per game data update, contains all normalized game data,
         /// raw data are intentionnally "hidden" under a generic object type (A plugin SHOULD NOT USE IT)
@@ -72,7 +75,34 @@ namespace SimHub.MQTTPublisher
         /// <param name="data">Current game data, including current and previous data frame.</param>
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
-            if (data.GameRunning)
+            PluginManager.SetPropertyValue("Connected", this.GetType(), mqttClient.IsConnected);
+
+            //Exits if the plugin is disabled
+            if (!Settings.Enabled)
+            {
+                UpdateSkipCounter = 0; //once enabled again it will immediatly update
+                return;
+            }
+
+            //Reduced update rate
+            UpdateSkipCounter--;
+            if (UpdateSkipCounter > 0)
+                return;
+            
+
+            //Avoid issues with disconnected client
+            if (!mqttClient.IsConnected)
+            {
+                UpdateSkipCounter = 3600; //Timeout of 1min at 60fps
+
+                //Client reconnect is done in a seperate thread to not lock up the update thread when server is offline
+                Task.Run(ReconnectClient); 
+                return;
+            }
+
+            UpdateSkipCounter = Settings.UpdateRateLimit;
+
+            if (data.NewData != null && data.GameRunning)
             {
                 var payload = new Dictionary<string, object>();
                 var telemetry = new Dictionary<string, object>();
@@ -104,22 +134,32 @@ namespace SimHub.MQTTPublisher
                     payload["telemetry"] = telemetry;
 
                     // FIXME: build topic at session start?
-                    var topic = Settings.Topic +
+                    string track = "Unknown";
+                    if (data.NewData.TrackCode != null)
+                        track = data.NewData.TrackCode.Replace("/", string.Empty);
+
+                    string carModel = "Unknown";
+                    if (data.NewData.CarModel != null)
+                        carModel = data.NewData.CarModel.Replace("/", string.Empty);
+
+                    string sessionType = "Unknown";
+                    if (data.NewData.SessionTypeName != null)
+                        sessionType = data.NewData.SessionTypeName.Replace("/", string.Empty);
+
+                    string topic = Settings.Topic +
                         "/" + UserSettings.UserId.ToString() +
                         "/" + data.SessionId +
                         "/" + data.GameName +
-                        "/" + data.NewData.TrackCode.Replace("/", string.Empty) +
-                        "/" + data.NewData.CarModel.Replace("/", string.Empty) +
-                        "/" + data.NewData.SessionTypeName.Replace("/", string.Empty);
+                        "/" + track +
+                        "/" + carModel +
+                        "/" + sessionType;
 
                     var applicationMessage = new MqttApplicationMessageBuilder()
-                    .WithTopic(topic)
-                    //.WithPayload(JsonConvert.SerializeObject(new Payload.PayloadRoot(data, UserSettings, pluginManager)))
-                    .WithPayload(JsonConvert.SerializeObject(payload))
-                    .Build();
+                   .WithTopic(topic)
+                   .WithPayload(JsonConvert.SerializeObject(payload))
+                   .Build();
 
-                    Task.Run(async () => await mqttClient.PublishAsync(applicationMessage, CancellationToken.None)).Wait();
-
+                    var task = mqttClient.PublishAsync(applicationMessage, CancellationToken.None);
                 }
             }
         }
@@ -154,7 +194,7 @@ namespace SimHub.MQTTPublisher
         /// <param name="pluginManager"></param>
         public void Init(PluginManager pluginManager)
         {
-            SimHub.Logging.Current.Info("Starting plugin");
+            Log("Starting plugin");
             //SimHub.Logging.Current.Info(string.Join("    \n", pluginManager.GetAllPropertiesNames()));
             foreach (var d in dataPoints)
             {
@@ -169,6 +209,10 @@ namespace SimHub.MQTTPublisher
             this.mqttFactory = new MqttFactory();
 
             CreateMQTTClient();
+
+            //Properties
+            pluginManager.AddProperty("Connected", this.GetType(), true.GetType(), null);
+            
         }
 
         internal void CreateMQTTClient()
@@ -195,7 +239,8 @@ namespace SimHub.MQTTPublisher
                //})
                .Build();
 
-            newmqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
+            if (Settings.Enabled)
+                newmqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
 
             var oldMqttClient = this.mqttClient;
 
@@ -205,6 +250,36 @@ namespace SimHub.MQTTPublisher
             {
                 oldMqttClient.Dispose();
             }
+        }
+
+        internal void Log(string text)
+        {
+            SimHub.Logging.Current.Info(LeftMenuTitle + ": " + text);
+        }
+
+        internal void LogError(string text)
+        {
+            SimHub.Logging.Current.Error(LeftMenuTitle + ": " + text);
+        }
+
+        private void ReconnectClient()
+        {
+            var recon = mqttClient.ReconnectAsync();
+
+            try
+            {
+                recon.Wait();
+            }
+            catch (AggregateException ex)
+            {
+                LogError("Failed to connect to the server: " + ex.InnerException.Message);
+            }
+
+
+            if (!mqttClient.IsConnected) //No connection possible
+                UpdateSkipCounter = 600; //Timeout of about 10s before retry
+            else
+                UpdateSkipCounter = 0; //So the next update can send data
         }
     }
 }

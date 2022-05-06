@@ -16,6 +16,10 @@ namespace SimHub.MQTTPublisher
         public string Password { get; set; } = "admin";
 
         public int Port { get; set; } = 31883;
+
+        public int UpdateRateLimit { get; set; } = 10;
+
+        public bool Enabled { get; set; } = true;
     }
 
     public class SimHubMQTTPublisherPluginUserSettings
