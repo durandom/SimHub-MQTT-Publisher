@@ -24,28 +24,11 @@ namespace SimHub.MQTTPublisher
 
         public SimHubMQTTPublisherPluginUserSettings UserSettings { get; private set; }
 
+        public SimHubMQTTPublisherPluginProperties PropertiesSettings { get; private set; }
+
         private MqttFactory mqttFactory;
         private IMqttClient mqttClient;
         private Dictionary<string, string> previousValues = new Dictionary<string, string>();
-
-        private Dictionary<string, string> dataPoints = new Dictionary<string, string>()
-        {
-            {"Rpms", "DataCorePlugin.GameData.Rpms" },
-            {"SpeedKmh", "DataCorePlugin.GameData.SpeedKmh"},
-            {"Clutch", "DataCorePlugin.GameData.Clutch"},
-            {"Throttle", "DataCorePlugin.GameData.Throttle"},
-            {"Brake", "DataCorePlugin.GameData.Brake"},
-            {"Gear", "DataCorePlugin.GameData.Gear"},
-            {"CurrentLap", "DataCorePlugin.GameData.CurrentLap"},
-            {"CarCoordinates", "DataCorePlugin.GameData.CarCoordinates"},
-            {"CurrentLapTime", "DataCorePlugin.GameData.CurrentLapTime"},
-            {"SteeringAngle", "ExtraInputProperties.SteeringAngle"},
-            {"HandBrake", "DataCorePlugin.GameData.Handbrake"},
-            {"TrackPositionPercent", "DataCorePlugin.GameData.TrackPositionPercent"},
-            {"CarCoordinates01", "DataCorePlugin.GameData.CarCoordinates01" },
-            {"CarCoordinates02", "DataCorePlugin.GameData.CarCoordinates02" },
-            {"CarCoordinates03", "DataCorePlugin.GameData.CarCoordinates03" },
-        };
 
         /// <summary>
         /// Instance of the current plugin manager
@@ -111,7 +94,7 @@ namespace SimHub.MQTTPublisher
 
                 payload["time"] = System.DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
-                foreach (var d in dataPoints)
+                foreach (var d in PropertiesSettings.DataPoints)
                 {
                     if ($"{d.Key}" == "CurrentLapTime")
                     {
@@ -174,6 +157,7 @@ namespace SimHub.MQTTPublisher
             // Save settings
             this.SaveCommonSettings("GeneralSettings", Settings);
             this.SaveCommonSettings("UserSettings", UserSettings);
+            this.SaveCommonSettings("Properties", PropertiesSettings);
             mqttClient.Dispose();
         }
 
@@ -196,15 +180,18 @@ namespace SimHub.MQTTPublisher
         {
             Log("Starting plugin");
             //SimHub.Logging.Current.Info(string.Join("    \n", pluginManager.GetAllPropertiesNames()));
-            foreach (var d in dataPoints)
-            {
-                previousValues[d.Key] = "";
-            }
 
             // Load settings
             Settings = this.ReadCommonSettings<SimHubMQTTPublisherPluginSettings>("GeneralSettings", () => new SimHubMQTTPublisherPluginSettings());
 
             UserSettings = this.ReadCommonSettings<SimHubMQTTPublisherPluginUserSettings>("UserSettings", () => new SimHubMQTTPublisherPluginUserSettings());
+
+            PropertiesSettings = this.ReadCommonSettings<SimHubMQTTPublisherPluginProperties>("Properties", () => new SimHubMQTTPublisherPluginProperties().LoadDefaults());
+            foreach (var d in PropertiesSettings.DataPoints)
+            {
+                if (!previousValues.ContainsKey(d.Key))
+                    previousValues.Add(d.Key,"");
+            }
 
             this.mqttFactory = new MqttFactory();
 
