@@ -184,7 +184,7 @@ namespace SimHub.MQTTPublisher
         /// <returns></returns>
         public System.Windows.Controls.Control GetWPFSettingsControl(PluginManager pluginManager)
         {
-            return new SimHubMQTTPublisherPluginUI(this);
+            return new MainControl(this);
         }
 
         /// <summary>

@@ -8,9 +8,13 @@ namespace SimHub.MQTTPublisher.Settings
     /// </summary>
     public partial class SimHubMQTTPublisherPluginUI : UserControl
     {
-        public SimHubMQTTPublisherPluginUI(SimHubMQTTPublisherPlugin simHubMQTTPublisherPlugin)
+        public SimHubMQTTPublisherPluginUI()
         {
             InitializeComponent();
+        }
+
+        internal void Init(SimHubMQTTPublisherPlugin simHubMQTTPublisherPlugin)
+        {
             SimHubMQTTPublisherPlugin = simHubMQTTPublisherPlugin;
 
             this.Model = new SimHubMQTTPublisherPluginUIModel()
@@ -28,9 +32,9 @@ namespace SimHub.MQTTPublisher.Settings
             this.DataContext = Model;
         }
 
-        private SimHubMQTTPublisherPluginUIModel Model { get; }
+        private SimHubMQTTPublisherPluginUIModel Model { get; set; }
 
-        private SimHubMQTTPublisherPlugin SimHubMQTTPublisherPlugin { get; }
+        private SimHubMQTTPublisherPlugin SimHubMQTTPublisherPlugin { get; set; }
 
         private void Apply_Settings(object sender, System.Windows.RoutedEventArgs e)
         {

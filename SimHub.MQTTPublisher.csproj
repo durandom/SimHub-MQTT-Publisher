@@ -45,7 +45,7 @@
     </Reference>
     <Reference Include="MahApps.Metro">
       <HintPath>Libs\MahApps.Metro.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="MQTTnet, Version=3.1.2.0, Culture=neutral, PublicKeyToken=b69712f52770c0a7, processorArchitecture=MSIL">
       <HintPath>packages\MQTTnet.3.1.2\lib\net461\MQTTnet.dll</HintPath>
@@ -62,7 +62,7 @@
     </Reference>
     <Reference Include="SimHub.Plugins">
       <HintPath>Libs\SimHub.Plugins.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -84,6 +84,9 @@
     <Compile Include="Settings\SimHubMQTTPublisherPluginUI.xaml.cs">
       <DependentUpon>SimHubMQTTPublisherPluginUI.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Settings\MainControl.xaml.cs">
+      <DependentUpon>MainControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SimHubMQTTPublisherPlugin.cs" />
     <Compile Include="SimHubMQTTPublisherPluginSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -101,6 +104,10 @@
       <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
     </Page>
     <Page Include="Settings\SimHubMQTTPublisherPluginUI.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Settings\MainControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
