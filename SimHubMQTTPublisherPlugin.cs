@@ -75,17 +75,20 @@ namespace SimHub.MQTTPublisher
         /// <param name="data">Current game data, including current and previous data frame.</param>
         public void DataUpdate(PluginManager pluginManager, ref GameData data)
         {
-            //Reduced update rate
-            if (UpdateSkipCounter > 0) {
-                UpdateSkipCounter--;
-                return;
-            }
-
             PluginManager.SetPropertyValue("Connected", this.GetType(), mqttClient.IsConnected);
 
             //Exits if the plugin is disabled
             if (!Settings.Enabled)
+            {
+                UpdateSkipCounter = 0; //once enabled again it will immediatly update
                 return;
+            }
+
+            //Reduced update rate
+            UpdateSkipCounter--;
+            if (UpdateSkipCounter > 0)
+                return;
+            
 
             //Avoid issues with disconnected client
             if (!mqttClient.IsConnected)
@@ -236,7 +239,8 @@ namespace SimHub.MQTTPublisher
                //})
                .Build();
 
-            newmqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
+            if (Settings.Enabled)
+                newmqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
 
             var oldMqttClient = this.mqttClient;
 
@@ -273,7 +277,7 @@ namespace SimHub.MQTTPublisher
 
 
             if (!mqttClient.IsConnected) //No connection possible
-                UpdateSkipCounter = 60 * 60; //Long timeout of about 1min before retry
+                UpdateSkipCounter = 360; //Timeout of about 6s before retry
             else
                 UpdateSkipCounter = 0; //So the next update can send data
         }
