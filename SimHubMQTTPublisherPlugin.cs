@@ -270,14 +270,14 @@ namespace SimHub.MQTTPublisher
             {
                 recon.Wait();
             }
-            catch (Exception ex)
+            catch (AggregateException ex)
             {
-                LogError("Failed to connect to the server: " + ex.Message);
+                LogError("Failed to connect to the server: " + ex.InnerException.Message);
             }
 
 
             if (!mqttClient.IsConnected) //No connection possible
-                UpdateSkipCounter = 360; //Timeout of about 6s before retry
+                UpdateSkipCounter = 600; //Timeout of about 10s before retry
             else
                 UpdateSkipCounter = 0; //So the next update can send data
         }
