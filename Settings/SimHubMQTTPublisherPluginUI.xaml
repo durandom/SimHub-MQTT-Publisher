@@ -13,6 +13,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="300" />
+                    <ColumnDefinition Width="45" />
                 </Grid.ColumnDefinitions>
 
                 <Grid.RowDefinitions>
@@ -23,27 +24,36 @@
                     <RowDefinition Height="auto" />
                     <RowDefinition Height="auto" />
                     <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
 
-                <Label Grid.Row="0">MQTT Server</Label>
-                <TextBox Margin="4" Grid.Row="0" Grid.Column="1" Text="{Binding Path=Server}"></TextBox>
+                <Label Grid.Row="0">Enabled</Label>
+                <CheckBox Margin="4" Grid.Row="0" Grid.Column="1" IsChecked="{Binding Path=Enabled}"></CheckBox>
 
-                <Label Grid.Row="1">MQTT Port</Label>
-                <TextBox Margin="4" Grid.Row="1" Grid.Column="1" Text="{Binding Path=Port}"></TextBox>
+                <Label Grid.Row="1">MQTT Server</Label>
+                <TextBox Margin="4" Grid.Row="1" Grid.Column="1" Text="{Binding Path=Server}"></TextBox>
 
-                <Label Grid.Row="2">MQTT Login</Label>
-                <TextBox Margin="4" Grid.Row="2" Grid.Column="1" Text="{Binding Path=Login}"></TextBox>
+                <Label Grid.Row="2">MQTT Port</Label>
+                <TextBox Margin="4" Grid.Row="2" Grid.Column="1" Text="{Binding Path=Port}"></TextBox>
 
-                <Label Grid.Row="3">MQTT Password</Label>
-                <TextBox Margin="4" Grid.Row="3" Grid.Column="1" Text="{Binding Path=Password}"></TextBox>
+                <Label Grid.Row="3">MQTT Login</Label>
+                <TextBox Margin="4" Grid.Row="3" Grid.Column="1" Text="{Binding Path=Login}"></TextBox>
 
-                <Label Grid.Row="4">MQTT Topic</Label>
-                <TextBox Margin="4" Grid.Row="4" Grid.Column="1" Text="{Binding Path=Topic}"></TextBox>
+                <Label Grid.Row="4">MQTT Password</Label>
+                <TextBox Margin="4" Grid.Row="4" Grid.Column="1" Text="{Binding Path=Password}"></TextBox>
 
-                <Label Grid.Row="5">User ID (readonly)</Label>
-                <TextBox Margin="4" Grid.Row="5" Grid.Column="1" Text="{Binding Path=UserId}" IsReadOnly="true"></TextBox>
+                <Label Grid.Row="5">MQTT Topic</Label>
+                <TextBox Margin="4" Grid.Row="5" Grid.Column="1" Text="{Binding Path=Topic}"></TextBox>
 
-                <styles:SHButtonPrimary Margin="4"  Grid.Row="6" Click="Apply_Settings">Apply setting</styles:SHButtonPrimary>
+                <Label Grid.Row="6">User ID (readonly)</Label>
+                <TextBox Margin="4" Grid.Row="6" Grid.Column="1" Text="{Binding Path=UserId}" IsReadOnly="true"></TextBox>
+
+                <Label Grid.Row="7" ToolTip="This reduces the polling rate by running it only Xth SimHub update. At 60fps a value of 10 means 6 updates per sec">Update Skip</Label>
+                <Slider Margin="4" Grid.Row="7" Grid.Column="1" Value="{Binding Path=UpdateRateLimit}" Interval="1" Minimum="1" Maximum="60"></Slider>
+                <TextBox Margin="4" Grid.Row="7" Grid.Column="2" Text="{Binding Path=UpdateRateLimit}"></TextBox>
+
+                <styles:SHButtonPrimary Margin="4"  Grid.Row="8" Click="Apply_Settings">Apply setting</styles:SHButtonPrimary>
             </Grid>
         </styles:SHSection>
     </Grid>
