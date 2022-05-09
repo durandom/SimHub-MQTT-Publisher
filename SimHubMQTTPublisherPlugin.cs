@@ -89,26 +89,16 @@ namespace SimHub.MQTTPublisher
             {
                 var payload = new Dictionary<string, object>();
                 var telemetry = new Dictionary<string, object>();
-                object value;
-                string stringValue;
 
-                payload["time"] = System.DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                payload["time"] = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
                 foreach (var d in PropertiesSettings.DataPoints)
                 {
-                    if ($"{d.Key}" == "CurrentLapTime")
-                    {
-                        value = data.NewData.CurrentLapTime.TotalMilliseconds;
-                    }
-                    else if ($"{d.Key}" == "LastLapTime")
-                    {
-                        value = data.NewData.LastLapTime.TotalMilliseconds;
-                    }
-                    else
-                    {
-                        value = pluginManager.GetPropertyValue(d.Value);
-                    }
-                    stringValue = $"{value}";
+                    object value = pluginManager.GetPropertyValue(d.Value);
+                    if (value is TimeSpan timeSpan)
+                        value = timeSpan.TotalMilliseconds;
+
+                    string stringValue = $"{value}";
                     if (stringValue != previousValues[d.Key])
                     {
                         telemetry[d.Key] = value;
