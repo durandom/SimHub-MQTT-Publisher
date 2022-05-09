@@ -36,22 +36,25 @@ namespace SimHub.MQTTPublisher
         public SimHubMQTTPublisherPluginProperties LoadDefaults()
         {
             DataPoints = new Dictionary<string, string>(){
-                { "Rpms", "DataCorePlugin.GameData.Rpms" },
-                { "SpeedKmh", "DataCorePlugin.GameData.SpeedKmh"},
-                { "Clutch", "DataCorePlugin.GameData.Clutch"},
-                { "Throttle", "DataCorePlugin.GameData.Throttle"},
                 { "Brake", "DataCorePlugin.GameData.Brake"},
-                { "Gear", "DataCorePlugin.GameData.Gear"},
-                { "CurrentLap", "DataCorePlugin.GameData.CurrentLap"},
-                { "CarCoordinates", "DataCorePlugin.GameData.CarCoordinates"},
-                { "CurrentLapTime", "DataCorePlugin.GameData.CurrentLapTime"},
-                { "SteeringAngle", "ExtraInputProperties.SteeringAngle"},
-                { "HandBrake", "DataCorePlugin.GameData.Handbrake"},
-                { "TrackPositionPercent", "DataCorePlugin.GameData.TrackPositionPercent"},
+//              {"CarCoordinates", "DataCorePlugin.GameData.CarCoordinates"},
                 { "CarCoordinates01", "DataCorePlugin.GameData.CarCoordinates01" },
                 { "CarCoordinates02", "DataCorePlugin.GameData.CarCoordinates02" },
                 { "CarCoordinates03", "DataCorePlugin.GameData.CarCoordinates03" },
+                { "Clutch", "DataCorePlugin.GameData.Clutch"},
+                { "CurrentLap", "DataCorePlugin.GameData.CurrentLap"},
+                { "CurrentLapTime", "DataCorePlugin.GameData.CurrentLapTime"},
+                { "Gear", "DataCorePlugin.GameData.Gear"},
+                { "HandBrake", "DataCorePlugin.GameData.Handbrake"},
+                { "LastLapTime", "DataCorePlugin.GameData.LastLapTime" },
+                { "Position", "DataCorePlugin.GameData.Position" },
+                { "Rpms", "DataCorePlugin.GameData.Rpms" },
+                { "SpeedKmh", "DataCorePlugin.GameData.SpeedKmh"},
+                { "SteeringAngle", "ExtraInputProperties.SteeringAngle"},
+                { "Throttle", "DataCorePlugin.GameData.Throttle"},
+                { "TrackPositionPercent", "DataCorePlugin.GameData.TrackPositionPercent"},
             };
+            
 
             return this;
         }

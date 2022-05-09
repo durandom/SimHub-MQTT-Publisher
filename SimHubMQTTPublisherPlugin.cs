@@ -100,6 +100,10 @@ namespace SimHub.MQTTPublisher
                     {
                         value = data.NewData.CurrentLapTime.TotalMilliseconds;
                     }
+                    else if ($"{d.Key}" == "LastLapTime")
+                    {
+                        value = data.NewData.LastLapTime.TotalMilliseconds;
+                    }
                     else
                     {
                         value = pluginManager.GetPropertyValue(d.Value);
