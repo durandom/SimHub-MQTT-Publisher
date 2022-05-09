@@ -81,6 +81,9 @@
     <Compile Include="Payload\Car.cs" />
     <Compile Include="Payload\PayloadRoot.cs" />
     <Compile Include="Payload\TrackInformation.cs" />
+    <Compile Include="Settings\PropertiesSettingUI.xaml.cs">
+      <DependentUpon>PropertiesSettingUI.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings\SimHubMQTTPublisherPluginUI.xaml.cs">
       <DependentUpon>SimHubMQTTPublisherPluginUI.xaml</DependentUpon>
     </Compile>
@@ -95,6 +98,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\PropertiesModel.cs" />
     <Compile Include="ViewModels\SimHubMQTTPublisherPluginUIModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +106,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
+    </Page>
+    <Page Include="Settings\PropertiesSettingUI.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Settings\SimHubMQTTPublisherPluginUI.xaml">
       <SubType>Designer</SubType>
@@ -129,7 +137,7 @@
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).dll" "c:\Program Files (x86)\SimHub\$(ProjectName).dll"
 copy /Y "$(TargetDir)MQTTnet.dll" "c:\Program Files (x86)\SimHub\MQTTnet.dll"</PostBuildEvent>
-  </PropertyGroup>
+  </PropertyGroup> 
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
