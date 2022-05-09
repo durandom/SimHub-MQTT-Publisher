@@ -81,7 +81,7 @@ namespace SimHub.MQTTPublisher.Settings
             if (item == null)
                 return;
 
-            var result = MessageBox.Show("Do you really want to delete the data point with field " + item.Name + " and property " + item.Property + " with ", "Are you sure?", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+            var result = MessageBox.Show("Do you really want to Delete this Property?\n\n" + item.Name + "\n" + item.Property, "Are you sure?", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
 
             if (result == MessageBoxResult.OK)
             {
@@ -95,12 +95,36 @@ namespace SimHub.MQTTPublisher.Settings
 
         private void BtnEdit_Click(object sender, RoutedEventArgs e)
         {
+            var item = GetSelectedIndex();
 
+            if (item == null)
+                return;
+
+            var editModel = new EditingPropertyModel()
+            {
+                IsEditing = true,
+                Mother = Model,
+                Row = item
+            };
+            
+            var window = new PropertyEditWindow();
+            window.Init(Plugin, editModel);
+            window.Show();
         }
 
         private void BtnAdd_Click(object sender, RoutedEventArgs e)
         {
+            var addModel = new EditingPropertyModel()
+            {
+                IsEditing = false,
+                Mother = Model,
+                Name = "",
+                Property = ""
+            };
 
+            var window = new PropertyEditWindow();
+            window.Init(Plugin, addModel);
+            window.Show();
         }
     }
 }

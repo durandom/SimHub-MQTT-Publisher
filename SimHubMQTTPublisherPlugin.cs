@@ -28,7 +28,7 @@ namespace SimHub.MQTTPublisher
 
         private MqttFactory mqttFactory;
         private IMqttClient mqttClient;
-        private Dictionary<string, string> previousValues = new Dictionary<string, string>();
+        internal Dictionary<string, string> previousValues = new Dictionary<string, string>();
 
         /// <summary>
         /// Instance of the current plugin manager
