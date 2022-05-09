@@ -61,6 +61,11 @@
                     <View:SimHubMQTTPublisherPluginUI x:Name="SettingsView"/>
                 </Grid>
             </TabItem>
+            <TabItem Header="Properties" Style="{StaticResource ColoredTabsStyle}">
+                <Grid>
+                    <View:PropertiesSettingUI x:Name="PropertiesView"/>
+                </Grid>
+            </TabItem>
         </TabControl>
 
 

@@ -25,7 +25,7 @@ namespace SimHub.MQTTPublisher.Settings
             InitializeComponent();
 
             SettingsView.Init(plugin);
-            
+            PropertiesView.Init(plugin);
         }
     }
 }
