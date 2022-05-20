@@ -24,30 +24,11 @@ namespace SimHub.MQTTPublisher
 
         public SimHubMQTTPublisherPluginUserSettings UserSettings { get; private set; }
 
+        public SimHubMQTTPublisherPluginProperties PropertiesSettings { get; private set; }
+
         private MqttFactory mqttFactory;
         private IMqttClient mqttClient;
-        private Dictionary<string, string> previousValues = new Dictionary<string, string>();
-
-        private Dictionary<string, string> dataPoints = new Dictionary<string, string>()
-        {
-            {"Brake", "DataCorePlugin.GameData.Brake"},
-//            {"CarCoordinates", "DataCorePlugin.GameData.CarCoordinates"},
-            {"CarCoordinates01", "DataCorePlugin.GameData.CarCoordinates01" },
-            {"CarCoordinates02", "DataCorePlugin.GameData.CarCoordinates02" },
-            {"CarCoordinates03", "DataCorePlugin.GameData.CarCoordinates03" },
-            {"Clutch", "DataCorePlugin.GameData.Clutch"},
-            {"CurrentLap", "DataCorePlugin.GameData.CurrentLap"},
-            {"CurrentLapTime", "DataCorePlugin.GameData.CurrentLapTime"},
-            {"Gear", "DataCorePlugin.GameData.Gear"},
-            {"HandBrake", "DataCorePlugin.GameData.Handbrake"},
-            {"LastLapTime", "DataCorePlugin.GameData.LastLapTime" },            
-            {"Position", "DataCorePlugin.GameData.Position" },
-            {"Rpms", "DataCorePlugin.GameData.Rpms" },
-            {"SpeedKmh", "DataCorePlugin.GameData.SpeedKmh"},
-            {"SteeringAngle", "ExtraInputProperties.SteeringAngle"},
-            {"Throttle", "DataCorePlugin.GameData.Throttle"},
-            {"TrackPositionPercent", "DataCorePlugin.GameData.TrackPositionPercent"},
-        };
+        internal Dictionary<string, string> previousValues = new Dictionary<string, string>();
 
         /// <summary>
         /// Instance of the current plugin manager
@@ -108,26 +89,16 @@ namespace SimHub.MQTTPublisher
             {
                 var payload = new Dictionary<string, object>();
                 var telemetry = new Dictionary<string, object>();
-                object value;
-                string stringValue;
 
-                payload["time"] = System.DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                payload["time"] = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
-                foreach (var d in dataPoints)
+                foreach (var d in PropertiesSettings.DataPoints)
                 {
-                    if ($"{d.Key}" == "CurrentLapTime")
-                    {
-                        value = data.NewData.CurrentLapTime.TotalMilliseconds;
-                    }
-                    else if ($"{d.Key}" == "LastLapTime")
-                    {
-                        value = data.NewData.LastLapTime.TotalMilliseconds;
-                    }
-                    else
-                    {
-                        value = pluginManager.GetPropertyValue(d.Value);
-                    }
-                    stringValue = $"{value}";
+                    object value = pluginManager.GetPropertyValue(d.Value);
+                    if (value is TimeSpan timeSpan)
+                        value = timeSpan.TotalMilliseconds;
+
+                    string stringValue = $"{value}";
                     if (stringValue != previousValues[d.Key])
                     {
                         telemetry[d.Key] = value;
@@ -180,6 +151,7 @@ namespace SimHub.MQTTPublisher
             // Save settings
             this.SaveCommonSettings("GeneralSettings", Settings);
             this.SaveCommonSettings("UserSettings", UserSettings);
+            this.SaveCommonSettings("Properties", PropertiesSettings);
             mqttClient.Dispose();
         }
 
@@ -190,7 +162,7 @@ namespace SimHub.MQTTPublisher
         /// <returns></returns>
         public System.Windows.Controls.Control GetWPFSettingsControl(PluginManager pluginManager)
         {
-            return new SimHubMQTTPublisherPluginUI(this);
+            return new MainControl(this);
         }
 
         /// <summary>
@@ -202,15 +174,18 @@ namespace SimHub.MQTTPublisher
         {
             Log("Starting plugin");
             //SimHub.Logging.Current.Info(string.Join("    \n", pluginManager.GetAllPropertiesNames()));
-            foreach (var d in dataPoints)
-            {
-                previousValues[d.Key] = "";
-            }
 
             // Load settings
             Settings = this.ReadCommonSettings<SimHubMQTTPublisherPluginSettings>("GeneralSettings", () => new SimHubMQTTPublisherPluginSettings());
 
             UserSettings = this.ReadCommonSettings<SimHubMQTTPublisherPluginUserSettings>("UserSettings", () => new SimHubMQTTPublisherPluginUserSettings());
+
+            PropertiesSettings = this.ReadCommonSettings<SimHubMQTTPublisherPluginProperties>("Properties", () => new SimHubMQTTPublisherPluginProperties().LoadDefaults());
+            foreach (var d in PropertiesSettings.DataPoints)
+            {
+                if (!previousValues.ContainsKey(d.Key))
+                    previousValues.Add(d.Key,"");
+            }
 
             this.mqttFactory = new MqttFactory();
 
